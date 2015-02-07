@@ -51,7 +51,7 @@
        		 	if ( ! $('.single_variation_wrap').is(':visible') ) {
        		 		reset_variation();
        		 	}
-       		 }, 250);	
+       		 }, 250);
 		})
 
 		.on( 'click', '.reset_variations', function( event ) {
@@ -63,8 +63,9 @@
 	$( function() {
 
 		// wc_add_to_cart_variation_params is required to continue, ensure the object exists
-		if ( typeof wc_add_to_cart_variation_params === 'undefined' )
+		if ( typeof wc_add_to_cart_variation_params === 'undefined' ) {
 			return false;
+		}
 		$( '.variations_form' ).wc_gzd_variation_form();
 		$( '.variations_form .variations select' ).change();
 	});
