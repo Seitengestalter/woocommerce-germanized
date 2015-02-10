@@ -14,6 +14,9 @@
 		if ( $('.type-product').find('.org_unit_price').length > 0 ) {
 			$( '.type-product .unit-price' ).html( $('.product').find('.org_unit_price').html() ).removeClass('variation_modified').show();
 		}
+		if ( $('.type-product').find('.org_tax_info').length > 0 ) { // XS-MOD: added
+			$( '.type-product .tax-info' ).html( $('.type-product').find('.org_tax_info').html() ).removeClass('variation_modified').show(); // XS-MOD: added
+		} // XS-MOD: added
 		$('.org_product_info').remove();
 		$('.variation_modified').remove();
 	}
@@ -30,6 +33,8 @@
 					$wrapper.append( '<div class="org_delivery_time org_product_info">' + $wrapper.find( '.delivery-time-info:first' ).html() + '</div>' );
 				if ( $wrapper.find( '.price-unit:first' ).length > 0 )
 					$wrapper.append( '<div class="org_unit_price org_product_info">' + $wrapper.find( '.price-unit:first' ).html() + '</div>' );
+				if ( $wrapper.find( '.tax-info:first' ).length > 0 ) // XS-MOD: added
+					$wrapper.append( '<div class="org_tax_info org_product_info">' + $wrapper.find( '.tax-info:first' ).html() + '</div>' ); // XS-MOD: added
 				$( '.org_product_info' ).hide();
 			}
 			if ( variation.price_html != '' ) {
@@ -38,12 +43,15 @@
 			}
 			$wrapper.find( '.delivery-time-info:first' ).hide();
 			$wrapper.find( '.price-unit:first' ).hide();
+			$wrapper.find( '.tax-info:first' ).hide(); // XS-MOD: added
 			if ( variation.delivery_time != '' )
 				$wrapper.find( 'p.delivery-time-info:first' ).html( variation.delivery_time ).addClass('variation_modified').show();
 			if ( variation.unit_price != '' ) {
 				$wrapper.find( '.price-unit:first' ).remove();
 				$wrapper.find( 'div[itemprop="offers"]:first' ).after('<p class="price price-unit smaller variation_modified">' + variation.unit_price + '</p>').show();
 			}
+			if ( variation.tax_info != '' ) // XS-MOD: added // XS-MOD: added
+				$wrapper.find( '.tax-info:first' ).html( variation.tax_info ).addClass('variation_modified').show(); // XS-MOD: added
 		})
 
 		// Check variations

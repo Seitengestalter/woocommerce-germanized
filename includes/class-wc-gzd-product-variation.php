@@ -26,11 +26,12 @@ class WC_GZD_Product_Variation extends WC_Product_Variation {
 		$this->variation_level_meta_data[ 'unit_price_sale' ] = 0;
 		$this->variation_level_meta_data[ 'mini_desc' ] = '';
 		$this->variation_level_meta_data[ 'gzd_product' ] = NULL;
+		$this->variation_level_meta_data[ 'tax_info' ] = ''; // XS-MOD: added
 	}
 
 	/**
 	 * Returns the current products delivery time term without falling back to default terms
-	 * 
+	 *
 	 * @return bool|object false returns false if term does not exist otherwise returns term object
 	 */
 	public function get_delivery_time() {
@@ -42,7 +43,7 @@ class WC_GZD_Product_Variation extends WC_Product_Variation {
 
 	/**
 	 * Implement getter to grab delivery time
-	 *  
+	 *
 	 * @param  string $key
 	 * @return mixed
 	 */

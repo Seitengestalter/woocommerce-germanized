@@ -61,7 +61,7 @@ if ( ! function_exists( 'woocommerce_gzd_template_single_tax_info' ) ) {
 	function woocommerce_gzd_template_single_tax_info() {
 		wc_get_template( 'single-product/tax-info.php' );
 	}
-} 
+}
 
 if ( ! function_exists( 'woocommerce_gzd_template_small_business_info' ) ) {
 
@@ -83,7 +83,7 @@ if ( ! function_exists( 'woocommerce_gzd_template_checkout_small_business_info' 
 		wc_get_template( 'global/small-business-info.php' );
 		echo '</td></tr>';
 	}
-} 
+}
 
 if ( ! function_exists( 'woocommerce_gzd_template_footer_vat_info' ) ) {
 
@@ -275,6 +275,7 @@ if ( ! function_exists( 'woocommerce_gzd_add_variation_options' ) ) {
 	function woocommerce_gzd_add_variation_options( $options, $product, $variation ) {
 		$options[ 'delivery_time' ] = $variation->gzd_product->get_delivery_time_html();
 		$options[ 'unit_price' ] = $variation->gzd_product->get_unit_html();
+		$options[ 'tax_info' ] = $variation->gzd_product->get_tax_info_html(); // XS-MOD: Added
 		return $options;
 	}
 
@@ -291,7 +292,7 @@ if ( ! function_exists( 'woocommerce_gzd_template_order_success_text' ) ) {
 if ( ! function_exists( 'woocommerce_gzd_template_loop_add_to_cart' ) ) {
 
 	function woocommerce_gzd_template_loop_add_to_cart( $text, $product ) {
-		return sprintf( 
+		return sprintf(
 			'<a href="%s" class="button">%s</a>',
 			esc_attr( $product->get_permalink() ),
 			esc_html( get_option( 'woocommerce_gzd_display_listings_link_details_text' ) )

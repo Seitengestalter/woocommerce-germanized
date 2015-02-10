@@ -22,18 +22,18 @@ class WC_GZD_Product {
 
 	/**
 	 * Construct new WC_GZD_Product
-	 *  
-	 * @param WC_Product $product 
+	 *
+	 * @param WC_Product $product
 	 */
 	public function __construct( $product ) {
 		$this->child = $product;
 	}
- 
+
 	/**
 	 * Redirects __get calls to WC_Product Class.
-	 *  
+	 *
 	 * @param  string $key
-	 * @return mixed     
+	 * @return mixed
 	 */
 	public function __get( $key ) {
 		if ( $this->child->$key )
@@ -45,7 +45,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Get a product's cart description
-	 * 
+	 *
 	 * @return boolean|string
 	 */
 	public function get_mini_desc() {
@@ -56,7 +56,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Checks whether current product applies for a virtual VAT exception (downloadable or virtual)
-	 *  
+	 *
 	 * @return boolean
 	 */
 	public function is_virtual_vat_exception() {
@@ -65,27 +65,31 @@ class WC_GZD_Product {
 
 	/**
 	 * Gets a product's tax description (if is taxable)
-	 *  
+	 *
 	 * @return mixed string if is taxable else returns false
 	 */
 	public function get_tax_info() {
 		$_tax  = new WC_Tax();
 		if ( $this->child->is_taxable() ) {
 			$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-			$tax_rates  = $_tax->get_rates( $this->child->get_tax_class() );
+			$_tax_class = $this->child->get_tax_class(); // XS-MOD: added
+			// $tax_rates  = $_tax->get_rates( $this->child->get_tax_class() ); // XS-MOD: commented, old version
+			$tax_rates  = $_tax->get_rates( $_tax_class ); // XS-MOD: changed
+			if( $_tax_class == 'variabel') // XS-MOD: added
+				return ( $tax_display_mode == 'incl' ? __( 'incl. VAT', 'woocommerce-germanized' ) : __( 'excl. VAT', 'woocommerce-germanized' ) ); // XS-MOD: added
 			if ( ! empty( $tax_rates ) ) {
 				$tax_rates = array_values( $tax_rates );
 				if ( $this->is_virtual_vat_exception() )
 					return ( $tax_display_mode == 'incl' ? __( 'incl. VAT', 'woocommerce-germanized' ) : __( 'excl. VAT', 'woocommerce-germanized' ) );
 				return ( $tax_display_mode == 'incl' ? sprintf( __( 'incl. %s%% VAT', 'woocommerce-germanized' ), ( wc_gzd_format_tax_rate_percentage( $tax_rates[0][ 'rate' ] ) ) ) : sprintf( __( 'excl. %s%% VAT', 'woocommerce-germanized' ), ( wc_gzd_format_tax_rate_percentage( $tax_rates[0][ 'rate' ] ) ) ) );
 			}
-		} 
+		}
 		return false;
 	}
 
 	/**
 	 * Checks whether current Product has a unit price
-	 *  
+	 *
 	 * @return boolean
 	 */
 	public function has_unit() {
@@ -96,7 +100,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit base html
-	 *  
+	 *
 	 * @return string
 	 */
 	public function get_unit_base() {
@@ -105,7 +109,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit
-	 *  
+	 *
 	 * @return string
 	 */
 	public function get_unit() {
@@ -115,7 +119,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit regular price
-	 *  
+	 *
 	 * @return string the regular price
 	 */
 	public function get_unit_regular_price() {
@@ -124,8 +128,8 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit sale price
-	 *  
-	 * @return string the sale price 
+	 *
+	 * @return string the sale price
 	 */
 	public function get_unit_sale_price() {
 		return apply_filters( 'woocommerce_gzd_get_unit_sale_price', $this->child->unit_price_sale, $this );
@@ -133,9 +137,9 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns the unit price (if is sale then return sale price)
-	 *  
-	 * @param  integer $qty   
-	 * @param  string  $price 
+	 *
+	 * @param  integer $qty
+	 * @param  string  $price
 	 * @return string  formatted unit price
 	 */
 	public function get_unit_price( $qty = 1, $price = '' ) {
@@ -145,9 +149,9 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit price including tax
-	 *  
-	 * @param  integer $qty   
-	 * @param  string  $price 
+	 *
+	 * @param  integer $qty
+	 * @param  string  $price
 	 * @return string  unit price including tax
 	 */
 	public function get_unit_price_including_tax( $qty = 1, $price = '' ) {
@@ -157,9 +161,9 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit price excluding tax
-	 *  
-	 * @param  integer $qty   
-	 * @param  string  $price 
+	 *
+	 * @param  integer $qty
+	 * @param  string  $price
 	 * @return string  unit price excluding tax
 	 */
 	public function get_unit_price_excluding_tax( $qty = 1, $price = '' ) {
@@ -169,8 +173,8 @@ class WC_GZD_Product {
 
 	/**
 	 * Checks whether unit price is on sale
-	 *  
-	 * @return boolean 
+	 *
+	 * @return boolean
 	 */
 	public function is_on_unit_sale() {
 		return ( $this->get_unit_sale_price() ) ? true : false;
@@ -178,8 +182,8 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns unit price html output
-	 *  
-	 * @return string 
+	 *
+	 * @return string
 	 */
 	public function get_unit_html() {
 		$display_price         = $this->get_unit_price();
@@ -191,7 +195,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns the current products delivery time term without falling back to default term
-	 *  
+	 *
 	 * @return bool|object false returns false if term does not exist otherwise returns term object
 	 */
 	public function get_delivery_time() {
@@ -203,7 +207,7 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns current product's delivery time term. If none has been set and a default delivery time has been set, returns that instead.
-	 *  
+	 *
 	 * @return object
 	 */
 	public function get_delivery_time_term() {
@@ -220,17 +224,29 @@ class WC_GZD_Product {
 
 	/**
 	 * Returns the delivery time html output
-	 *  
-	 * @return string 
+	 *
+	 * @return string
 	 */
 	public function get_delivery_time_html() {
 		return ( $this->get_delivery_time_term() ) ? apply_filters( 'woocommerce_germanized_delivery_time_html', str_replace( '{delivery_time}', $this->get_delivery_time_term()->name, get_option( 'woocommerce_gzd_delivery_time_text' ) ), $this->get_delivery_time_term()->name ) : '';
 	}
 
 	/**
+	 * Returns the tax info html output
+	 *
+	 * XS-MOD: Added whole function
+	 *
+	 * @return string
+	 */
+	public function get_tax_info_html() {
+		$_tax_info_html = $this->get_tax_info();
+		return ( $_tax_info_html ) ? $_tax_info_html : '';
+	}
+
+	/**
 	 * Returns the shipping costs notice html output
-	 *  
-	 * @return string 
+	 *
+	 * @return string
 	 */
 	public function get_shipping_costs_html() {
 		if ( $this->child->is_virtual() && get_option( 'woocommerce_gzd_display_shipping_costs_virtual' ) != 'yes' )
