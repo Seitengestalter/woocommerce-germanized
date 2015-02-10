@@ -49,6 +49,8 @@ class WC_GZD_Checkout {
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( $this, 'set_item_desc_order_meta_hidden' ), 0 );
 		// Deactivate checkout shipping selection
 		add_action( 'woocommerce_review_order_before_shipping', array( $this, 'remove_shipping_rates' ), 0 );
+		// Add better fee taxation
+		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'do_fee_tax_calculation' ), PHP_INT_MAX, 1 );
 	}
 
 	public function init_fields() {
@@ -82,6 +84,51 @@ class WC_GZD_Checkout {
 				'group'    => array( 'billing' )
 			);
 
+		}
+	}
+
+	/**
+	 * Recalculate fee taxes to split tax based on different tax rates contained within cart
+	 *  
+	 * @param  WC_Cart $cart
+	 */
+	public function do_fee_tax_calculation( WC_Cart $cart ) {
+		if ( get_option( 'woocommerce_gzd_fee_tax' ) != 'yes' )
+			return;
+		if ( ! empty( $cart->fees ) ) {
+			$tax_shares = wc_gzd_get_cart_tax_share( 'fee' );
+			foreach ( $cart->fees as $key => $fee ) {
+				if ( ! $fee->taxable && get_option( 'woocommerce_gzd_fee_tax_force' ) != 'yes' )
+					continue;	
+				// Calculate gross price if necessary
+				if ( $fee->taxable ) {
+					$fee_tax_rates = WC_Tax::get_rates( $fee->tax_class );
+					$fee_tax = WC_Tax::calc_tax( $fee->amount, $fee_tax_rates, false );
+					$fee->amount += array_sum( $fee_tax );
+				}
+				// Set fee to nontaxable to avoid WooCommerce default tax calculation
+				$fee->taxable = false;
+				// Calculate tax class share
+				if ( ! empty( $tax_shares ) ) {
+					$fee_taxes = array();
+					foreach ( $tax_shares as $rate => $class ) {
+						$tax_rates = WC_Tax::get_rates( $rate );
+						$tax_shares[ $rate ][ 'fee_tax_share' ] = $fee->amount * $class[ 'share' ];
+						$tax_shares[ $rate ][ 'fee_tax' ] = WC_Tax::calc_tax( ( $fee->amount * $class[ 'share' ] ), $tax_rates, true );
+						$fee_taxes += $tax_shares[ $rate ][ 'fee_tax' ];
+					}
+					foreach ( $tax_shares as $rate => $class ) {
+						$cart->fees[ $key ]->tax_data = $cart->fees[ $key ]->tax_data + $class[ 'fee_tax' ];
+					}
+					// Add fee taxes to cart taxes
+					foreach ( array_keys( $cart->taxes + $fee_taxes ) as $sub ) {
+						$cart->taxes[ $sub ] = ( isset( $fee_taxes[ $sub ] ) ? $fee_taxes[ $sub ] : 0 ) + ( isset( $cart->taxes[ $sub ] ) ? $cart->taxes[ $sub ] : 0 );
+					}
+					// Update fee
+					$cart->fees[ $key ]->tax = array_sum( $cart->fees[ $key ]->tax_data );
+					$cart->fees[ $key ]->amount = $cart->fees[ $key ]->amount - $cart->fees[ $key ]->tax;
+				}
+			}
 		}
 	}
 
@@ -193,12 +240,16 @@ class WC_GZD_Checkout {
 	}
 
 	public function save_fields( $order_id ) {
+		$checkout = WC()->checkout();
 		if ( ! empty( $this->custom_fields ) ) {
 			foreach ( $this->custom_fields as $key => $custom_field ) {
 				if ( ! empty( $custom_field[ 'group' ] ) && ! isset( $custom_field[ 'override' ] ) ) {
 					foreach ( $custom_field[ 'group' ] as $group ) {
-						if ( ! empty( $_POST[ $group . '_' . $key ] ) )
-							update_post_meta( $order_id, '_' . $group . '_' . $key, sanitize_text_field( $_POST[ $group . '_' . $key ] ) );
+						$val = ( isset( $checkout->posted[ $group . '_' . $key ] ) ? $checkout->posted[ $group . '_' . $key ] : '' );
+						if ( $group == 'shipping' || $group == 'billing' )
+							$val = $checkout->get_posted_address_data( $key, $group );
+						if ( ! empty( $val ) )
+							update_post_meta( $order_id, '_' . $group . '_' . $key, sanitize_text_field( $val ) );
 					}
 				}
 			}

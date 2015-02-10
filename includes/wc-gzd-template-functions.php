@@ -112,7 +112,7 @@ if ( ! function_exists( 'woocommerce_gzd_template_cart_product_delivery_time' ) 
 	 */
 	function woocommerce_gzd_template_cart_product_delivery_time( $title, $cart_item, $cart_item_key ) {
 		if ( isset($cart_item["data"]) ) {
-			$product = wc_gzd_get_product( $cart_item["data"] );
+			$product = $cart_item["data"];
 			if ( $product->gzd_product->get_delivery_time_term() )
 				$title .= '<p class="price-shipping-costs-info">' . $product->gzd_product->get_delivery_time_html() . '</p>';
 		}
@@ -297,6 +297,25 @@ if ( ! function_exists( 'woocommerce_gzd_template_loop_add_to_cart' ) ) {
 			esc_html( get_option( 'woocommerce_gzd_display_listings_link_details_text' ) )
 		);
 	}
+
+}
+
+if ( ! function_exists( 'woocommerce_gzd_template_order_submit' ) ) {
+
+	function woocommerce_gzd_template_order_submit() {
+		wc_get_template( 'checkout/order-submit.php', array(
+			'checkout'           => WC()->checkout(),
+			'order_button_text'  => apply_filters( 'woocommerce_order_button_text', __( 'Place order', 'woocommerce' ) )
+		) );
+	}
+
+}
+
+if ( ! function_exists( 'woocommerce_gzd_template_checkout_review_title' ) ) {
+
+	function woocommerce_gzd_template_checkout_review_title() { ?>
+		<h3 id="wc_gzd_order_review_heading"><?php _e( 'Your order', 'woocommerce' ); ?></h3>
+	<?php }
 
 }
 
